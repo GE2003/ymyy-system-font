@@ -33,6 +33,7 @@ const routes = [
         path: '/inoSite',
         name: 'inoSite',
         meta: {
+            //增加premission为鉴权字段，判断是否为管理员
             premission: "admin",
             show: true,
           title: '接种点管理',
@@ -44,6 +45,7 @@ const routes = [
         path: '/vaccine',
         name: 'vaccine',
         meta: {
+            
             premission: "admin",
             show: true,
           title: '疫苗管理',
