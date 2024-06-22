@@ -26,6 +26,7 @@
   
   <script>
   //import axios from 'axios'; // 导入组件axios
+  //增加选择普通用户登录or管理员登录，分离操作端
   export default {
     name: 'LoginView', // 默认导出组件的名称
     data() { // 双向绑定数据模型，在这里定义页面实时更新的数据
