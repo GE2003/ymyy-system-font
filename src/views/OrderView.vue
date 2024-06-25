@@ -3,36 +3,66 @@
     <div id="order">
         <!-- 新冠疫苗接种预约 -->
         <div>
-        
-            <h3>预约接种时间段</h3>
-            <el-time-select placeholder="起始时间" v-model="startTimeAM" :picker-options="{
-                  start: '08:30',
-                  step: '00:15',
-                  end: '18:30'
-                }">
+            <h3>选择预约日期和时间段</h3>
+            <!-- 日期选择器 -->
+            <el-date-picker
+                v-model="selectedDate"
+                type="date"
+                placeholder="选择日期"
+                :picker-options="{ 
+                    firstDayOfWeek: 1, 
+                    disabledDate: time => time.getTime() < Date.now() - 86400000
+                }"
+                style="width: 180px; margin-right: 20px;"
+            >
+            </el-date-picker>
+            <!-- 上午工作时间段 -->
+            <el-time-select 
+                v-model="selectedStartTimeAM" 
+                placeholder="上午开始时间"
+                :picker-options="{
+                    start: '08:30',
+                    step: '00:15',
+                    end: '11:30'
+                }"
+                style="margin-right: 20px;"
+            >
             </el-time-select>
-            <el-time-select placeholder="结束时间" v-model="endTimeAM" :picker-options="{
-                  start: '08:30',
-                  step: '00:15',
-                  end: '18:30',
-                  minTime: startTimeAM
-                }">
+            <el-time-select 
+                v-model="selectedEndTimeAM" 
+                placeholder="上午结束时间"
+                :picker-options="{
+                    start: selectedStartTimeAM,
+                    step: '00:15',
+                    end: '11:30'
+                }"
+                style="margin-right: 20px;"
+            >
             </el-time-select>
-            <!-- 时间选择器：下午工作时间段 -->
-            <!-- <h3>下午工作时间段</h3> 
-            <el-time-select placeholder="起始时间" v-model="startTimePM" :picker-options="{
-                  start: '14:30',
-                  step: '00:15',
-                  end: '18:30'
-                }">
-            </el-time-select> 
-            <el-time-select placeholder="结束时间" v-model="endTimePM" :picker-options="{
-                  start: '14:30',
-                  step: '00:15',
-                  end: '18:30',
-                  minTime: startTimePM
-                }">
-            </el-time-select> -->
+            <!-- 下午工作时间段 -->
+            <el-time-select 
+                v-model="selectedStartTimePM" 
+                placeholder="下午开始时间"
+                :picker-options="{
+                    start: '14:30',
+                    step: '00:15',
+                    end: '17:30'
+                }"
+                style="margin-right: 20px;"
+            >
+            </el-time-select>
+            <el-time-select 
+                v-model="selectedEndTimePM" 
+                placeholder="下午结束时间"
+                :picker-options="{
+                    start: selectedStartTimePM,
+                    step: '00:15',
+                    end: '17:30'
+                }"
+                style="margin-right: 20px;"
+            >
+            </el-time-select>
+           
         </div>
         <div>
             <!-- 接种点列表 -->
@@ -51,7 +81,7 @@
                 </el-table-column>
                 <el-table-column label="操作">
                     <template slot-scope="scope">
-                        <el-button type="primary" @click="onOrderCreate(scope.$index,scope.row)">预约</el-button>
+                        <el-button type="primary" @click="onOrderCreate(scope.$index, scope.row)">预约</el-button>
                     </template>
                 </el-table-column>
             </el-table>
@@ -64,36 +94,30 @@
 </template>
 
 <script>
-    //import axios from 'axios';
     export default {
         name: 'OrderView',
         data() {
             return {
-                pager: 0, // 总页码数
-                // 分页数据定义
+                pager: 0,
                 inoSitePage: {
-                    records: [], // 分页列表
-                    total: 0, // 总记录数
-                    size: 10, // 分页大小（每页显示多少条）
-                    pages: 0, // 总页码
-                    current: 1, // 当前页码（默认显示第1页）
+                    records: [],
+                    total: 0,
+                    size: 10,
+                    pages: 0,
+                    current: 1,
                 },
-                orderForm: { // 修改、添加表单数据
-                    times: '上午',
-                },
-                startTimeAM: '', // 时间选择器--上午开始时间
-                endTimeAM: '', // 时间选择器--上午结束时间
-                startTimePM: '', // 时间选择器--下午开始时间
-                endTimePM: '' // 时间选择器--下午结束时间
+                selectedDate: '', // 选择的日期
+                selectedStartTimeAM: '', // 上午开始时间
+                selectedEndTimeAM: '', // 上午结束时间
+                selectedStartTimePM: '', // 下午开始时间
+                selectedEndTimePM: '' // 下午结束时间
             }
         },
         created() {
-            this.getInoSiteList(1); // 调用接种点列表分页函数
+            this.getInoSiteList(1);
         },
         methods: {
-            // 列表分页
             getInoSiteList(pageNo) {
-                //this.inoSitePage.current = pageNo; // 更新页码
                 this.axios({
                     method: 'get',
                     url: "/api/inosite/page",
@@ -102,53 +126,47 @@
                         size: this.inoSitePage.size
                     }
                 }).then(res => {
-                    this.inoSitePage.records = res.data.data.records; // 更新数据
-                    this.pager = res.data.data.pages; // 把总页码赋值给分页器pager对象
-                    this.inoSitePage.total = res.data.data.total; // 把总记录数赋值给分布器total
+                    this.inoSitePage.records = res.data.data.records;
+                    this.pager = res.data.data.pages;
+                    this.inoSitePage.total = res.data.data.total;
                 })
             },
-            // 接种点列表页码改变事件
             inoSitePageCurrentChange(page) {
                 this.getInoSiteList(page);
             },
-            // 预约
-            
             onOrderCreate(index, row) {
                 console.log("预约业务: ", index, row);
-                let inoSiteId = row.id; // 获取接种点id
-                let user = {}; // 获取用户id
-                let times = `${this.startTimeAM}-${this.endTimeAM}`;// 获取预约时间段
-                if (!this.startTimeAM || !this.endTimeAM || this.startTimeAM.trim() === "" || this.endTimeAM.trim() === "") {
-                     alert("请选择预约时间");
-                } else {
-                    let token = localStorage.getItem("Authorization");
-                this.axios({
-                    url: '/api/login/info',
-                    method: 'post',
-                    data: token
-                }).then(res => {
-                    user = res.data.data;
-                    console.log("预约用户: ", user);
-                })
-                //let userId = user.id;
-                console.log("userId: ", user.id);
-                // 发起请求，生成预约记录
+                let inoSiteId = row.id;
+                let user = {};
+                let selectedDate = this.selectedDate;
+                let times = '';
+
+                if (!selectedDate || !this.selectedStartTimeAM || !this.selectedEndTimeAM ||
+                    !this.selectedStartTimePM || !this.selectedEndTimePM) {
+                    this.$message.error('请选择预约日期和时间段');
+                    return;
+                }
+
+                times = `${selectedDate} ${this.selectedStartTimeAM}-${this.selectedEndTimeAM}, ${this.selectedStartTimePM}-${this.selectedEndTimePM}`;
+
+                // Example of API call to create an order
                 this.axios({
                     url: '/api/order',
                     method: 'post',
                     data: {
-                        userId: 1, //userId: user.id,
+                        userId: user.id,
                         inoSiteId: inoSiteId,
                         times: times,
                     },
                 }).then(res => {
                     let code = res.data.code;
-                    if (200 === code) {
+                    if (code === 200) {
                         this.$message.success("预约成功，预约当天有效");
                     }
-                })
-                   }
-               
+                }).catch(err => {
+                    console.error('Error:', err); // Utilizing 'err' to log the error
+                    this.$message.error("预约失败，请稍后重试");
+                });
             },
         }
     }
